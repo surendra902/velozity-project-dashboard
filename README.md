@@ -390,7 +390,7 @@ the refresh cookie is first-party.
 | Piece | Host |
 |---|---|
 | API + WebSocket + static SPA | Render (web service) |
-| PostgreSQL | Neon (free tier, pooled connection string) |
+| PostgreSQL | Neon (free tier, direct connection string) |
 
 Render rather than Vercel for the API, despite the brief suggesting Vercel: a
 WebSocket needs a process that outlives the request, and Vercel's functions are
@@ -415,10 +415,24 @@ Start:  npm run start        # prisma migrate deploy runs before the server boot
 `typescript` — and the build is `tsc`. `prisma` is a **runtime** dependency here
 rather than a dev one, because `start` runs `prisma migrate deploy` first.
 
-Set `NODE_ENV=production`, `COOKIE_SECURE=true`, `DATABASE_URL` (the Neon pooled
-string) and `CORS_ORIGIN` (the deployed origin) in the Render dashboard. Both JWT
-secrets must be present and different. All secrets live in environment
-variables; nothing is hardcoded, and the server refuses to boot without them.
+Set `NODE_ENV=production`, `COOKIE_SECURE=true`, `DATABASE_URL` and `CORS_ORIGIN`
+(the deployed origin) in the Render dashboard. Both JWT secrets must be present
+and different. All secrets live in environment variables; nothing is hardcoded,
+and the server refuses to boot without them.
+
+**Use Neon's *direct* connection string, not the pooled one.** Neon's dashboard
+offers a `-pooler` host and a direct host. `start` runs `prisma migrate deploy`
+on every boot, and migrations take advisory locks and depend on prepared
+statements — neither survives PgBouncer's transaction pooling, so the deploy
+fails with a lock or prepared-statement error that looks nothing like a
+connection problem. The direct URL is the one shown by default, without
+`-pooler` in the hostname. It is the only `DATABASE_URL` the app needs; there is
+no separate `directUrl`, precisely so there is no second string to paste wrong.
+
+The trade this accepts: a direct connection is not pooled, and Neon's free tier
+caps concurrent connections well below what a popular deploy would need. Traffic
+here is one evaluator clicking through seeded data, so the ceiling is not
+reachable — add `directUrl` (keeping the pooled URL as `url`) if that changes.
 
 > **Cold starts.** The free Render instance sleeps after 15 minutes of
 > inactivity. The first request may take ~30 seconds to wake it.

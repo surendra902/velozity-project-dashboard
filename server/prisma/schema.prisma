@@ -9,6 +9,12 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // Deliberately no `directUrl`. A pooled PgBouncer endpoint (Neon's
+  // `-pooler` host) does not preserve the advisory locks and prepared
+  // statements `prisma migrate deploy` relies on, and `start` runs it on every
+  // boot. Carrying one direct URL — the one Neon gives you by default, without
+  // `-pooler` — removes a second credential that could be pasted wrong. See
+  // README §6 for the connection-ceiling this accepts.
 }
 
 enum Role {
