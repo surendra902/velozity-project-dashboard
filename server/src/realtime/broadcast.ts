@@ -13,7 +13,14 @@ import { serializeActivity, type ActivityWithActor } from '../services/activity.
  *   ADMIN           -> global feed
  *   owning PM       -> their per-user feed
  *   assigned dev    -> their per-user feed
- *   anyone viewing  -> the project room
+ *
+ * Deliberately NOT the project room. Project-room membership is projectScope,
+ * which for a developer is "has any task in this project" — broader than
+ * activityScope's "this task is mine". Emitting the feed there handed a
+ * developer live lines for a colleague's task in the same project, which the
+ * REST catch-up correctly withheld. The two feeds must agree; membership in a
+ * room only ever widens access to *data* (`task:updated`, emitted below), never
+ * to *activity*.
  *
  * `previousAssigneeId` is supplied on reassignment so the developer who just
  * lost the task still sees the event — their feed was scoped to that task a
@@ -27,9 +34,6 @@ export function broadcastActivity(
   },
 ): void {
   const payload = serializeActivity(row);
-
-  // Everyone currently looking at the project.
-  emitToRoom(ROOMS.project(row.projectId), EVENTS.activity, payload);
 
   // Global feed.
   emitToRoom(ROOMS.feedAdmin(), EVENTS.activity, payload);

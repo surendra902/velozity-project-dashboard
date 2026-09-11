@@ -458,9 +458,11 @@ Stated rather than hidden.
   only brakes on credential stuffing.
 - **No account lockout, password reset, or email verification** — outside the
   brief.
-- **CSRF relies on `SameSite` alone.** `Lax` locally and `None` in production
-  (which is `Secure`-only). A synchroniser-token scheme would be the next step
-  for a cross-site deployment.
+- **CSRF relies on `SameSite` alone.** `Lax` in both environments, because the
+  SPA is served from the API origin in both — the cookie is first-party, so the
+  stronger setting is also the correct one. A synchroniser-token scheme is the
+  next step only if the frontend is ever split onto its own origin, which would
+  force `None` (and `Secure`).
 - **Optimistic UI is not implemented.** The client refetches after a mutation,
   which is correct but not instant.
 - **Activity messages are stored in English only.** No i18n layer.

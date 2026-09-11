@@ -120,6 +120,9 @@ export function useLiveFeed(projectId?: string) {
 
       socket.on('activity:new', (payload: Activity) => {
         if (cancelled) return;
+        // A PM is joined to their own feed room, which already carries only
+        // their projects, so an unscoped dashboard shows exactly that. The
+        // filter only matters when a specific project is open.
         if (projectId && payload.projectId !== projectId) return;
         prepend([payload]);
       });
