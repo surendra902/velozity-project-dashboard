@@ -5,8 +5,7 @@ import { validate, param } from '../middleware/validate';
 import { activityQuerySchema, createUserSchema, idParamSchema } from '../schemas';
 import { activityScope } from '../services/scope';
 import { listActivity, unreadCount } from '../services/activity.service';
-import { createUser } from '../services/auth.service';
-import { prisma } from '../lib/prisma';
+import { createUser, listAssignableUsers } from '../services/auth.service';
 import { listNotifications, markRead, markAllRead } from '../services/notification.service';
 import { dashboardFor } from '../services/dashboard.service';
 
@@ -101,12 +100,7 @@ userRouter.get(
   requireRole('ADMIN', 'PROJECT_MANAGER'),
   asyncHandler(async (req: Request, res: Response) => {
     const role = typeof req.query.role === 'string' ? req.query.role : undefined;
-    const users = await prisma.user.findMany({
-      where: role ? { role: role as never } : { role: { in: ['DEVELOPER', 'PROJECT_MANAGER'] } },
-      select: { id: true, name: true, email: true, role: true, teamId: true },
-      orderBy: { name: 'asc' },
-    });
-    res.json({ users });
+    res.json({ users: await listAssignableUsers(role) });
   }),
 );
 

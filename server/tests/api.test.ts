@@ -233,6 +233,25 @@ describe('3. developers are confined to their own tasks', () => {
     expect(res.status).toBe(403);
   });
 
+  it('a PM\'s assignee picker gets assignable staff, and no password hashes', async () => {
+    // The picker needs id/name/role; it must never receive a credential field.
+    const res = await request(app).get('/api/users').set(auth(pm1.token));
+    expect(res.status).toBe(200);
+
+    const fields = ['id', 'name', 'email', 'role', 'teamId'];
+    for (const u of res.body.users) {
+      expect(Object.keys(u).sort()).toEqual([...fields].sort());
+      expect(u.role).not.toBe('ADMIN');
+    }
+    expect(res.body.users.some((u: { role: string }) => u.role === 'DEVELOPER')).toBe(true);
+    expect(JSON.stringify(res.body)).not.toMatch(/passwordHash|\$2[aby]\$/);
+
+    // The `role` filter narrows the list rather than being ignored.
+    const devs = await request(app).get('/api/users?role=DEVELOPER').set(auth(pm1.token));
+    expect(devs.body.users.length).toBeGreaterThan(0);
+    expect(devs.body.users.every((u: { role: string }) => u.role === 'DEVELOPER')).toBe(true);
+  });
+
   it('?assigneeId cannot widen a developer\'s scope', async () => {
     // The filter is ANDed after the scope predicate, so asking for someone
     // else's tasks returns an empty list rather than their tasks.

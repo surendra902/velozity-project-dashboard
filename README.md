@@ -75,7 +75,7 @@ and rebuilds everything.
 ### Tests
 
 ```bash
-npm test             # 50 integration tests against a real Postgres
+npm test             # 51 integration tests against a real Postgres
 npm run typecheck    # tsc over src/ and tests/
 ```
 
@@ -494,6 +494,6 @@ transaction as the update, so the feed can never omit a transition the database
 applied. An hourly node-cron sweep writes the overdue flags; it is never
 computed on page load. Socket.io, pinned to the WebSocket transport, carries the
 feed and the unread badge, and a reconnecting client backfills missed events
-from PostgreSQL rather than a server-side buffer. Fifty integration tests
+from PostgreSQL rather than a server-side buffer. Fifty-one integration tests
 against a real database cover the role boundaries, including that a denied
 resource and a nonexistent one return identical 404s.

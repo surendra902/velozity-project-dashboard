@@ -198,4 +198,13 @@ export async function getPublicUserById(id: string): Promise<PublicUser> {
   return toPublicUser(user);
 }
 
+/** The assignee picker's list. Admins and PMs only — see the route. */
+export async function listAssignableUsers(role?: string): Promise<PublicUser[]> {
+  const users = await prisma.user.findMany({
+    where: role ? { role: role as Role } : { role: { in: ['DEVELOPER', 'PROJECT_MANAGER'] } },
+    orderBy: { name: 'asc' },
+  });
+  return users.map(toPublicUser);
+}
+
 export const ACCESS_TTL_FOR_CLIENT = env.ACCESS_TOKEN_TTL;
