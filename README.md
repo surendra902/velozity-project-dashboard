@@ -13,7 +13,7 @@ PostgreSQL + Prisma · Socket.io · node-cron
 Docker is the supported path. You need Node 20+ and Docker.
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/surendra902/velozity-project-dashboard
 cd velozity-project-dashboard
 
 # 1. Postgres
