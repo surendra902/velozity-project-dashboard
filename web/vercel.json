@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://velozity-project-dashboard-kxp4.onrender.com/api/:path*"
+    },
+    {
+      "source": "/socket.io/:path*",
+      "destination": "https://velozity-project-dashboard-kxp4.onrender.com/socket.io/:path*"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

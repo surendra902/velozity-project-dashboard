@@ -392,16 +392,31 @@ the refresh cookie is first-party.
 | API + WebSocket + static SPA | Render (web service) |
 | PostgreSQL | Neon (free tier, direct connection string) |
 
-Render rather than Vercel for the API, despite the brief suggesting Vercel: a
-WebSocket needs a process that outlives the request, and Vercel's functions are
-request-scoped with no documented support for a persistent duplex connection.
-There is also nowhere for the scheduled sweep to live — Vercel's Hobby cron runs
-**once per day**, and the brief asks for the overdue flag to be set by a job
-rather than on page load, so an hourly sweep has to run somewhere that stays up.
-The SPA itself is static and *would* deploy to Vercel unmodified, but it is
-served from the API origin instead: splitting them makes the refresh cookie
-third-party and forces `SameSite=None`, which weakens the CSRF posture for no
-gain. One origin, one deploy, no CORS preflight.
+Render rather than Vercel for the API. Vercel does now serve WebSockets — it is
+in public beta, and the functions support arbitrary Node libraries — so the old
+objection that a function cannot hold a duplex connection no longer stands. The
+remaining objection is the scheduled sweep: Vercel's Hobby cron is limited to
+**once per day** and its scheduling precision is ±59 minutes, and deployment
+*fails* on a more frequent expression. The brief requires the overdue flag to be
+set by a job rather than computed on page load, so an hourly sweep needs a host
+that stays up — or a paid cron elsewhere. (Vercel's own `setInterval` does not
+substitute: with no request in flight the instance is frozen, so ticks are
+missed; ping-triggered sweeps would make the schedule a function of traffic.) The
+SPA is static and *does* deploy to Vercel unmodified, but it is served from the
+API origin instead: splitting them makes the refresh cookie third-party and
+forces `SameSite=None`, which weakens the CSRF posture for no gain. One origin,
+one deploy, no CORS preflight.
+
+The SPA is also deployable to Vercel against the Render API, keeping one browser
+origin by rewriting `/api/*` through to it rather than pointing the client at a
+second host. `web/vercel.json` carries those rewrites. That configuration is
+**not the recommended deployment**, and it is retained only as a record of what
+was measured: the REST proxy works, but the WebSocket upgrade does not survive
+it — a websocket-only client gets `connect_error` through Vercel and connects
+fine to the same backend directly, so the live feed would silently need the
+fallback. Either deploy the whole app to one host, or accept that Vercel's own
+WebSocket support (not a rewrite) is what the realtime layer would need to ride
+on.
 
 Build and start commands:
 
