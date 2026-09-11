@@ -1,0 +1,16 @@
+{
+  "name": "velozity-project-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Real-time client project dashboard with role-based access and a live activity feed",
+  "scripts": {
+    "install:all": "npm --prefix server install --include=dev && npm --prefix web install --include=dev",
+    "dev:server": "npm --prefix server run dev",
+    "dev:web": "npm --prefix web run dev",
+    "build": "npm --prefix server run build && npm --prefix web run build",
+    "start": "npm --prefix server run start",
+    "migrate": "npm --prefix server run migrate",
+    "seed": "npm --prefix server run seed",
+    "test": "npm --prefix server run test"
+  }
+}

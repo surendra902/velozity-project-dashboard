@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+coverage/
+.vite/
+
+# tsc -b writes these next to the config; they are build output, not source.
+*.tsbuildinfo
+
+# Local verification harness (throwaway Postgres cluster + scratch probes).
+.verify/

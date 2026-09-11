@@ -1,0 +1,39 @@
+# Render blueprint. Optional — the service can equally be created by hand with
+# the build/start commands in README §6. This just makes the infrastructure
+# reviewable instead of living only in a dashboard.
+#
+# DATABASE_URL points at Neon (see README §6); Render's own free Postgres expires
+# after 30 days, which would let the deployed link die mid-evaluation.
+services:
+  - type: web
+    name: velozity-project-dashboard
+    runtime: node
+    plan: free
+    region: singapore
+    # --include=dev is required: Render sets NODE_ENV=production, which npm reads
+    # as --omit=dev, and the build is tsc.
+    buildCommand: npm run install:all && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Secure cookies; app.ts already sets `trust proxy` for Render's proxy.
+      - key: COOKIE_SECURE
+        value: "true"
+      # Set these two in the dashboard after the first deploy, once the service
+      # URL is known — the refresh cookie is first-party, so this is the origin
+      # the browser actually loads.
+      - key: CORS_ORIGIN
+        sync: false
+      # Neon pooled connection string.
+      - key: DATABASE_URL
+        sync: false
+      # Generated independently, so the two secrets differ by construction.
+      # A shared secret would let a leaked access key mint refresh tokens.
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
