@@ -28,7 +28,10 @@ services:
       # the browser actually loads.
       - key: CORS_ORIGIN
         sync: false
-      # Neon pooled connection string.
+      # Neon *direct* connection string — the host without `-pooler`. `start`
+      # runs `prisma migrate deploy` on every boot, and PgBouncer's transaction
+      # pooling does not preserve the advisory locks or prepared statements it
+      # needs. See README §6.
       - key: DATABASE_URL
         sync: false
       # Generated independently, so the two secrets differ by construction.
